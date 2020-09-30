@@ -1,0 +1,13 @@
+[Unit]
+Description=githit
+After=network.target
+
+[Service]
+WorkingDirectory=/home/pi/githit
+Type=simple
+User=pi
+ExecStart=/home/pi/githit/githit
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
