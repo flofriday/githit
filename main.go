@@ -1,12 +1,14 @@
 package main
 
 import (
+	"database/sql"
 	"log"
-	"net/url"
+	"net/http"
 	"os"
 	"regexp"
 
-	"github.com/ChimeraCoder/anaconda"
+	"github.com/jasonlvhit/gocron"
+	_ "github.com/mattn/go-sqlite3"
 )
 
 var (
@@ -25,32 +27,46 @@ func mustGetenv(name string) string {
 	return v
 }
 
-func main() {
-	api := anaconda.NewTwitterApiWithCredentials(accessToken, accessTokenSecret, consumerKey, consumerSecret)
+func setupDB(db *sql.DB) {
+	//createTableSQL := `CREATE TABLE [IF NOT EXISTS] tweets (
+	createTableSQL := `CREATE TABLE IF NOT EXISTS tweets (
+		url TEXT,
+		hour INTEGER,
+		number INTEGER,
+		PRIMARY KEY (url, hour)
+	);`
 
-	stream := api.PublicStreamFilter(url.Values{
-		"track":    []string{"github com"},
-		"language": []string{"en"},
-	})
-
-	defer stream.Stop()
-
-	log.Print("[Info] Started streaming...\n")
-	for v := range stream.C {
-		t, ok := v.(anaconda.Tweet)
-		if !ok {
-			log.Printf("received unexpected value of type %T", v)
-			continue
-		}
-
-		for _, url := range t.Entities.Urls {
-			//link := url.Display_url
-			link := githubRegex.FindString(url.Expanded_url)
-			if link == "" {
-				log.Printf("[No match] @%v: %v", t.User.ScreenName, url.Expanded_url)
-				continue
-			}
-			log.Printf("@%v: %v (%v)", t.User.ScreenName, link, url.Expanded_url)
-		}
+	statement, err := db.Prepare(createTableSQL)
+	if err != nil {
+		log.Fatal(err.Error())
 	}
+	defer statement.Close()
+
+	statement.Exec()
+}
+
+func main() {
+	// Setup the database
+	db, err := sql.Open("sqlite3", "data/githit.db")
+	if err != nil {
+		panic("Could not open databse: " + err.Error())
+	}
+	defer db.Close()
+	setupDB(db)
+
+	// Create the server
+	s := server{
+		db:           db,
+		projectsJSON: []byte("{[]}"),
+	}
+	s.routes()
+
+	// Start the background jobs
+	go s.twitterBackgroundJob()
+	gocron.Every(15).Minutes().Do(s.statisticBackgroundJob)
+
+	// Start listening
+	addr := "0.0.0.0:3000"
+	log.Printf("Server started at: %v", addr)
+	http.ListenAndServe(addr, &s)
 }
