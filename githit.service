@@ -6,6 +6,10 @@ After=network.target
 WorkingDirectory=/home/pi/githit
 Type=simple
 User=pi
+Environment="TWITTER_API_KEY=XXXX"
+Environment="TWITTER_API_SECRET=XXXX"
+Environment="TWITTER_ACCESS_TOKEN=XXXX"
+Environment="TWITTER_ACCESS_TOKEN_SECRET=XXXX"
 ExecStart=/home/pi/githit/githit
 Restart=always
 
