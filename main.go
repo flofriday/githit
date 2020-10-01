@@ -63,6 +63,7 @@ func main() {
 
 	// Start the background jobs
 	go s.twitterBackgroundJob()
+	go s.statisticBackgroundJob()
 	gocron.Every(15).Minutes().Do(s.statisticBackgroundJob)
 
 	// Start listening

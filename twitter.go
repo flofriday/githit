@@ -40,19 +40,20 @@ func (s *server) twitterBackgroundJob() {
 }
 
 func (s *server) addGitHubRepo(repo string) {
-	hour := (time.Now().UTC().UnixNano() / time.Hour.Nanoseconds()) * time.Hour.Nanoseconds()
-	hour /= time.Second.Nanoseconds()
+	hour := roundToUnixHour(time.Now().UTC())
 
 	addRepoSQL := `INSERT INTO tweets VALUES(?, ?, 1)
 	ON CONFLICT(url, hour) DO UPDATE SET number = number + 1;`
 	statement, err := s.db.Prepare(addRepoSQL)
 	if err != nil {
-		log.Fatal(err.Error())
+		log.Printf("[ERROR] Unable to prepare add repo statement: %v", err.Error())
+		return
 	}
 	defer statement.Close()
 
 	_, err = statement.Exec(repo, hour)
 	if err != nil {
 		log.Printf("[ERROR] Unable to add repo to sqlite: %v", err.Error())
+		return
 	}
 }
