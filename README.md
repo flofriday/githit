@@ -1,9 +1,10 @@
 # githit
 Find trending git repositories.
 
-This is in an very early stage, so don't expect anything.
+This is in an very early stage, at the moment the core of the API works, but it 
+is not stable and there is no Frontend yet.
 
-## Run the script
+## Run the server
 1) Install golang
 2) Run the following:
 ```
@@ -15,3 +16,4 @@ TWITTER_ACCESS_TOKEN_SECRET=XXXX \
 ./githit
 ```
 Of course you have to replace the tokens with the ones twitter provided you.
+3) Open [localhost:3000/api/projects](localhost:3000/api/projects) in your browser
