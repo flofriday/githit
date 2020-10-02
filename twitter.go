@@ -3,22 +3,28 @@ package main
 import (
 	"log"
 	"net/url"
+	"regexp"
 	"time"
 
 	"github.com/ChimeraCoder/anaconda"
+)
+
+var (
+	gitURLRegex  = regexp.MustCompile(`^(https?:\/\/)?(www.)?(github|gitlab).com\/[a-zA-Z0-9\-_]+\/[a-zA-Z0-9\-_]+`)
+	gitRepoRegex = regexp.MustCompile(`(github|gitlab).com\/[a-zA-Z0-9\-_]+\/[a-zA-Z0-9\-_]+`)
 )
 
 func (s *server) twitterBackgroundJob() {
 	api := anaconda.NewTwitterApiWithCredentials(accessToken, accessTokenSecret, consumerKey, consumerSecret)
 
 	stream := api.PublicStreamFilter(url.Values{
-		"track":    []string{"github com"},
+		"track":    []string{"github com", "gitlab com"},
 		"language": []string{"en"},
 	})
 
 	defer stream.Stop()
 
-	log.Print("[Info] Started Twitter streaming...\n")
+	log.Print("[INFO] Started Twitter streaming...\n")
 	for v := range stream.C {
 		t, ok := v.(anaconda.Tweet)
 		if !ok {
@@ -27,21 +33,29 @@ func (s *server) twitterBackgroundJob() {
 		}
 
 		for _, url := range t.Entities.Urls {
-			link := githubRegex.FindString(url.Expanded_url)
+			link := gitURLRegex.FindString(url.Expanded_url)
 			if link == "" {
-				log.Printf("[No match] @%v: %v", t.User.ScreenName, url.Expanded_url)
+				log.Printf("[NO MATCH] @%v: %v", t.User.ScreenName, url.Expanded_url)
 				continue
 			}
 
-			log.Printf("@%v: %v (%v)", t.User.ScreenName, link, url.Expanded_url)
+			log.Printf("[MATCH] @%v: %v", t.User.ScreenName, url.Expanded_url)
 			s.addGitHubRepo(link)
 		}
 	}
 }
 
 func (s *server) addGitHubRepo(repo string) {
-	hour := roundToUnixHour(time.Now().UTC())
+	// Format the URL so all entries are formatted the same
+	// This means the url will have: no scheme, no user or password, no query
+	// no www in front of the host, no queries, no fragment
+	repo = gitRepoRegex.FindString(repo)
+	if repo == "" {
+		log.Printf("[ERROR] Unable to parse repo url")
+		return
+	}
 
+	// Perpare the sql statement
 	addRepoSQL := `INSERT INTO tweets VALUES(?, ?, 1)
 	ON CONFLICT(url, hour) DO UPDATE SET number = number + 1;`
 	statement, err := s.db.Prepare(addRepoSQL)
@@ -51,6 +65,8 @@ func (s *server) addGitHubRepo(repo string) {
 	}
 	defer statement.Close()
 
+	// Execute the sql statement
+	hour := roundToUnixHour(time.Now().UTC())
 	_, err = statement.Exec(repo, hour)
 	if err != nil {
 		log.Printf("[ERROR] Unable to add repo to sqlite: %v", err.Error())

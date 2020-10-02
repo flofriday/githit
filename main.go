@@ -5,7 +5,6 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"regexp"
 
 	"github.com/jasonlvhit/gocron"
 	_ "github.com/mattn/go-sqlite3"
@@ -16,7 +15,6 @@ var (
 	consumerSecret    = mustGetenv("TWITTER_API_SECRET")
 	accessToken       = mustGetenv("TWITTER_ACCESS_TOKEN")
 	accessTokenSecret = mustGetenv("TWITTER_ACCESS_TOKEN_SECRET")
-	githubRegex       = regexp.MustCompile(`^(https?:\/\/)?(www.)?(github|gitlab).com\/[a-zA-Z0-9\-_]+\/[a-zA-Z0-9\-_]+`)
 )
 
 func mustGetenv(name string) string {
@@ -64,7 +62,8 @@ func main() {
 	// Start the background jobs
 	go s.twitterBackgroundJob()
 	go s.statisticBackgroundJob()
-	gocron.Every(15).Minutes().Do(s.statisticBackgroundJob)
+	gocron.Every(10).Minutes().Do(s.statisticBackgroundJob)
+	<-gocron.Start()
 
 	// Start listening
 	addr := "0.0.0.0:3000"
