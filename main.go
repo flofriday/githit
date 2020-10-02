@@ -5,8 +5,9 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
-	"github.com/jasonlvhit/gocron"
+	"github.com/go-co-op/gocron"
 	_ "github.com/mattn/go-sqlite3"
 )
 
@@ -62,8 +63,9 @@ func main() {
 	// Start the background jobs
 	go s.twitterBackgroundJob()
 	go s.statisticBackgroundJob()
-	gocron.Every(10).Minutes().Do(s.statisticBackgroundJob)
-	<-gocron.Start()
+	scheduler := gocron.NewScheduler(time.UTC)
+	scheduler.Every(10).Minutes().Do(s.statisticBackgroundJob)
+	scheduler.StartAsync()
 
 	// Start listening
 	addr := "0.0.0.0:3000"
