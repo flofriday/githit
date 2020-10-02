@@ -64,11 +64,11 @@ func main() {
 	go s.twitterBackgroundJob()
 	go s.statisticBackgroundJob()
 	scheduler := gocron.NewScheduler(time.UTC)
-	scheduler.Every(10).Minutes().Do(s.statisticBackgroundJob)
+	scheduler.Every(15).Minutes().Do(s.statisticBackgroundJob)
 	scheduler.StartAsync()
 
 	// Start listening
 	addr := "0.0.0.0:3000"
-	log.Printf("Server started at: %v", addr)
+	log.Printf("[INFO] Server started at: %v", addr)
 	http.ListenAndServe(addr, &s)
 }

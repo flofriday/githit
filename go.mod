@@ -12,5 +12,6 @@ require (
 	github.com/go-co-op/gocron v0.3.1
 	github.com/gorilla/mux v1.8.0
 	github.com/mattn/go-sqlite3 v1.14.4
+	github.com/otiai10/opengraph v1.1.2
 	golang.org/x/net v0.0.0-20200930145003-4acb6c075d10 // indirect
 )

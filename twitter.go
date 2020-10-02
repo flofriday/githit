@@ -10,8 +10,8 @@ import (
 )
 
 var (
-	gitURLRegex  = regexp.MustCompile(`^(https?:\/\/)?(www.)?(github|gitlab).com\/[a-zA-Z0-9\-_]+\/[a-zA-Z0-9\-_]+`)
-	gitRepoRegex = regexp.MustCompile(`(github|gitlab).com\/[a-zA-Z0-9\-_]+\/[a-zA-Z0-9\-_]+`)
+	gitURLRegex  = regexp.MustCompile(`^(https?:\/\/)?(www.)?(github|gitlab).com\/[a-zA-Z0-9\-_]+\/[a-zA-Z0-9\-_\.]+`)
+	gitRepoRegex = regexp.MustCompile(`(github|gitlab).com\/[a-zA-Z0-9\-_]+\/[a-zA-Z0-9\-_\.]+`)
 )
 
 func (s *server) twitterBackgroundJob() {
