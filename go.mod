@@ -11,6 +11,6 @@ require (
 	github.com/garyburd/go-oauth v0.0.0-20180319155456-bca2e7f09a17 // indirect
 	github.com/gorilla/mux v1.8.0
 	github.com/jasonlvhit/gocron v0.0.1
-	github.com/mattn/go-sqlite3 v1.14.3
-	golang.org/x/net v0.0.0-20200923182212-328152dc79b1 // indirect
+	github.com/mattn/go-sqlite3 v1.14.4
+	golang.org/x/net v0.0.0-20200930145003-4acb6c075d10 // indirect
 )
