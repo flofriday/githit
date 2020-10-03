@@ -46,7 +46,7 @@ func setupDB(db *sql.DB) {
 
 func main() {
 	// Setup the database
-	db, err := sql.Open("sqlite3", "data/githit.db")
+	db, err := sql.Open("sqlite3", "data/githit.db?_busy_timeout=5000")
 	if err != nil {
 		panic("Could not open databse: " + err.Error())
 	}
