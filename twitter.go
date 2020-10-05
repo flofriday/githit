@@ -11,8 +11,9 @@ import (
 )
 
 var (
-	gitURLRegex  = regexp.MustCompile(`^(https?:\/\/)?(www.)?(github|gitlab).com\/(?!(sponsors|settings|api))[a-zA-Z0-9\-_]+\/[a-zA-Z0-9\-_\.]+`)
-	gitRepoRegex = regexp.MustCompile(`(github|gitlab).com\/[a-zA-Z0-9\-_]+\/[a-zA-Z0-9\-_\.]+`)
+	gitURLRegex       = regexp.MustCompile(`^(https?:\/\/)?(www.)?(github|gitlab).com\/(?!(sponsors|settings|api))[a-zA-Z0-9\-_]+\/[a-zA-Z0-9\-_\.]+`)
+	gitForbiddenRegex = regexp.MustCompile(`^(https?:\/\/)?(www.)?(github|gitlab).com\/(sponsors|settings|api)`)
+	gitRepoRegex      = regexp.MustCompile(`(github|gitlab).com\/[a-zA-Z0-9\-_]+\/[a-zA-Z0-9\-_\.]+`)
 )
 
 func (s *server) twitterBackgroundJob() {
@@ -37,6 +38,11 @@ func (s *server) twitterBackgroundJob() {
 			expandedURL := strings.ToLower(url.Expanded_url)
 			link := gitURLRegex.FindString(expandedURL)
 			if link == "" {
+				log.Printf("[NO MATCH] @%v: %v", t.User.ScreenName, url.Expanded_url)
+				continue
+			}
+
+			if gitForbiddenRegex.MatchString(expandedURL) {
 				log.Printf("[NO MATCH] @%v: %v", t.User.ScreenName, url.Expanded_url)
 				continue
 			}
