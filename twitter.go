@@ -4,13 +4,14 @@ import (
 	"log"
 	"net/url"
 	"regexp"
+	"strings"
 	"time"
 
 	"github.com/ChimeraCoder/anaconda"
 )
 
 var (
-	gitURLRegex  = regexp.MustCompile(`^(https?:\/\/)?(www.)?(github|gitlab).com\/[a-zA-Z0-9\-_]+\/[a-zA-Z0-9\-_\.]+`)
+	gitURLRegex  = regexp.MustCompile(`^(https?:\/\/)?(www.)?(github|gitlab).com\/(?!(sponsors|settings|api))[a-zA-Z0-9\-_]+\/[a-zA-Z0-9\-_\.]+`)
 	gitRepoRegex = regexp.MustCompile(`(github|gitlab).com\/[a-zA-Z0-9\-_]+\/[a-zA-Z0-9\-_\.]+`)
 )
 
@@ -33,7 +34,8 @@ func (s *server) twitterBackgroundJob() {
 		}
 
 		for _, url := range t.Entities.Urls {
-			link := gitURLRegex.FindString(url.Expanded_url)
+			expandedURL := strings.ToLower(url.Expanded_url)
+			link := gitURLRegex.FindString(expandedURL)
 			if link == "" {
 				log.Printf("[NO MATCH] @%v: %v", t.User.ScreenName, url.Expanded_url)
 				continue
